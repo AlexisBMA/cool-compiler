@@ -1,1 +1,5 @@
-1 + 2 + 3 + 4
+int variable
+
+variable = 90 - (10 + 10)
+
+print(variable+5)

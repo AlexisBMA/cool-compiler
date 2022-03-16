@@ -1,33 +1,61 @@
 from string import Template
 
-tpl_start = """
+tpl_start_text = """
     .text
-main:
+main: 
 """
 
+tpl_start_data = """
+    .data
+"""
+
+tpl_var_decl = Template("""
+$varname: .word 0
+""")
+
 tpl_end = """
-    li	$v0     10		                        #10 para cerrar
-    syscall			                            #cerrar
+    li	    $v0     10                  # 10 para terminar la emulación
+    syscall
 """
 
 tpl_immediate = Template("""
-    li      $$a0                $immediate
+    li      $$a0    $immediate
 """)
 
 tpl_suma = Template("""
 $left
-    sw      $$a0    0($$sp)
+    sw      $$a0    0($$sp)             # Salvar en el stack
     addiu   $$sp    $$sp        -4
 $right
-    lw      $$t1    4($$sp)
+    lw      $$t1    4($$sp)             # Recuperar resultado parcial anterior
+    addiu   $$sp    $$sp        4       # Pop
     add     $$a0    $$a0        $$t1
-    addiu   $$sp    $$sp        4
 """)
 
-tpl_printint = """
-	li	    $v0     1               #para imprimir enteros
-	syscall			                #imprimir
-"""
+tpl_resta = Template("""
+$left
+    sw      $$a0    0($$sp)             # Salvar en el stack
+    addiu   $$sp    $$sp        -4
+$right
+    lw      $$t1    4($$sp)             # Recuperar resultado parcial anterior
+    addiu   $$sp    $$sp        4       # Pop
+    sub     $$a0    $$t1        $$a0
+""")
+
+tpl_print_int = Template("""
+$prev
+	li	    $$v0     1              # para imprimir enteros
+	syscall			                # imprimir
+""")
+
+tpl_var = Template("""
+    lw      $$a0        $name       # Usar variable
+""")
+
+tpl_asignacion = Template("""
+$prev
+    sw      $$a0        $name       # Guardar valor
+""")
 
 """
 	i: .word 0
