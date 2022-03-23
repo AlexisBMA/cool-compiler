@@ -5,17 +5,17 @@ import asm
 
 class GenCode(marzoListener):
     def __init__(self):
-        self.r = ''
+        self.result = ''
         self.stack = []
         self.labels = 0
     
     def enterProgram(self, ctx:marzoParser.ProgramContext):
-        self.r += asm.tpl_start_text
+        self.result += asm.tpl_start_text
     
     def exitProgram(self, ctx: marzoParser.ProgramContext):
         for c in ctx.getChildren():
-            self.r += c.code
-        self.r += asm.tpl_end
+            self.result += c.code
+        self.result += asm.tpl_end
 
     def exitPrimaria(self, ctx:marzoParser.PrimariaContext):
         self.stack.append(

@@ -21,8 +21,8 @@ def main():
     walker.walk(gencode, tree)
 
     with open('test.asm', "w") as writer:
-        writer.write(dataGen.r)
-        writer.write(gencode.r)
+        writer.write(dataGen.result)
+        writer.write(gencode.result)
         
 
 if __name__ == '__main__':

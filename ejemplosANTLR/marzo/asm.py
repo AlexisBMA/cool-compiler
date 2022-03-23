@@ -91,10 +91,10 @@ labelexit$n:
 tpl_while = Template("""
 label_test$n:
 $test
-    beqz        $$a0        label_exit
+    beqz        $$a0        label_exit$n
 $stmt
     j           label_test$n
-label_exit:
+label_exit$n:
 """)
 
 tpl_procedure = Template("""
