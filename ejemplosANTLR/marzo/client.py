@@ -15,13 +15,15 @@ def main():
     dataGen = DataGenerator()
 
     walker = ParseTreeWalker()
-    walker.walk(gencode, tree)
+    
+    # Por las constantes, ahora dataGen debe ir ANTES
     walker.walk(dataGen, tree)
-
+    walker.walk(gencode, tree)
 
     with open('test.asm', "w") as writer:
-        writer.write(gencode.r)
         writer.write(dataGen.r)
+        writer.write(gencode.r)
+        
 
 if __name__ == '__main__':
     main()

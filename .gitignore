@@ -56,3 +56,5 @@ Thumbs.db
 *Visitor.py
 .antlr/
 *.asm
+*.java
+*.interp

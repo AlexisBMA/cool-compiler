@@ -1,5 +1,30 @@
+def func (x, y, z)
 int variable
 
 variable = 90 - (10 + 10)
 
-print(variable+5)
+printint(variable+5)
+printstr("\n")
+
+if (0) then
+printstr("Era cero\n")
+else
+printstr("No era cero\n")
+
+variable = 5
+while (variable)
+->
+    printstr("En el ciclo: ")
+    printint(variable)
+    printstr("\n")
+    variable = variable - 1
+<-
+
+def func(x, y, z)
+->
+    printstr("Hola mundo")
+    return 0
+<-
+
+variable = func(1, 2, 3)
+
