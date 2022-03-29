@@ -12,14 +12,16 @@ class DataGenerator(marzoListener):
         self.result += asm.tpl_start_data
 
     def enterDeclaracion(self, ctx: marzoParser.DeclaracionContext):
-        self.result += asm.tpl_var_decl.substitute(
-            varname = ctx.getChild(1).getText()
-        )
+        # No more variables in data segment in this version!
+        # self.result += asm.tpl_var_decl.substitute(
+        #     varname = ctx.getChild(1).getText()
+        # )
+        # ctx.code = ''
         ctx.code = ''
 
     def enterPrimaria_string(self, ctx: marzoParser.Primaria_stringContext):
         self.constants = self.constants + 1
-        ctx.label = "var{}".format(self.constants)
+        ctx.label = "const{}".format(self.constants)
         self.result += asm.tpl_string_const_decl.substitute(
             name = ctx.label, content = ctx.getText()
         )
