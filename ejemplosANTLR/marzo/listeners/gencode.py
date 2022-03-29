@@ -44,16 +44,27 @@ class GenCode(marzoListener):
                 left=self.stack.pop()
                 )
             )
+
     def exitAsignacion(self, ctx: marzoParser.AsignacionContext):
-        ctx.code = asm.tpl_asignacion.substitute(
+        ctx.code = asm.tpl_asignacion_from_stack.substitute(
              prev = self.stack.pop(),
-             name = ctx.getChild(0).getText()
+             name = ctx.getChild(0).getText(),
+             offset = ctx.getChild(0).offset
         )
     
     def exitVar(self, ctx: marzoParser.VarContext):
         self.stack.append(
-            asm.tpl_var.substitute(name=ctx.getText())
+            asm.tpl_var_from_stack.substitute(
+                offset = ctx.offset,
+                name = ctx.getText()
+            )
         )
+        # Las variables ya no viven en el .text :,(
+        # name = ctx.getText()
+
+        # self.stack.append(
+        #     asm.tpl_var.substitute(name=code)
+        # )
     
     def exitPrintint(self, ctx: marzoParser.PrintintContext):
         ctx.code = asm.tpl_print_int.substitute(
@@ -96,21 +107,23 @@ class GenCode(marzoListener):
         )
 
     def exitProcedure(self, ctx: marzoParser.ProcedureContext):
-        # No me importan las variables ヽ(°〇°)ﾉ
         ctx.code = asm.tpl_procedure.substitute(
             name = ctx.name.text,
-            code = ctx.statement().code
+            code = ctx.statement().code,
+            stack_size = (2 + ctx.params + ctx.locals) * 4,
+            frame_size = (2 + ctx.locals) * 4
         )
 
     def exitCall(self, ctx: marzoParser.CallContext):
-        r = ''
+        result = ''
+        params = 0
         for c in ctx.expression():
-            r += self.stack.pop()
-            r += asm.tpl_push_arg
+            result += self.stack.pop()
+            result += asm.tpl_push_arg
         
         self.stack.append(
             asm.tpl_call.substitute(
-                push_arguments = r,
+                push_arguments = result,
                 name = ctx.Variable()
             )
         )
