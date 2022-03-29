@@ -1,6 +1,11 @@
 grammar marzo;
 
-program : statement+;
+program : function+;
+
+function:
+    'def' name=Variable '(' (Variable (',' Variable)* )? ')' 'as' statement #procedure
+    ;
+
 
 expression: 
     expression '+' expression       #suma
@@ -21,7 +26,6 @@ statement:
     | 'if' '(' expression ')' 'then' statement 'else' statement #ifelse
     | 'while' '(' expression ')' statement      #while
     | '->' statement+ '<-'          #block
-    | 'def' name=Variable '(' (Variable (',' Variable)* )? ')' 'as' statement #procedure
     | 'return' expression           #return
     ;
 
