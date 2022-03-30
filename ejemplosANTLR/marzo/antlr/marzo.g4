@@ -10,6 +10,7 @@ function:
 expression: 
     expression '+' expression       #suma
     | expression '-' expression     #resta
+    | expression '<' expression     #menorque
     | '(' expression ')'            #parens
     | Variable '(' ( expression (',' expression)* )? ')'         #call
     | Numero                        #primaria

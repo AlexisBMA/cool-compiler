@@ -16,5 +16,10 @@ def main () as
         variable = func(variable, 9, 10)
     <-
 
+    if (variable < 100) then 
+    ->
+        printstr("Si era menor\n")
+    <-
+
     return 0
 <-

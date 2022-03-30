@@ -45,6 +45,16 @@ class GenCode(marzoListener):
                 )
             )
 
+    def exitMenorque(self, ctx: marzoParser.MenorqueContext):
+        self.labels = self.labels = self.labels + 1
+        self.stack.append(
+            asm.tpl_menorque.substitute(
+                right=self.stack.pop(),
+                left=self.stack.pop(),
+                n=self.labels
+            )
+        )
+
     def exitAsignacion(self, ctx: marzoParser.AsignacionContext):
         ctx.code = asm.tpl_asignacion_from_stack.substitute(
              prev = self.stack.pop(),
@@ -81,7 +91,7 @@ class GenCode(marzoListener):
         ctx.code = asm.tpl_if.substitute(
             prev = self.stack.pop(),
             n = self.labels, 
-            stmt_true = ctx.statement(0).code
+            stmt_true = ctx.statement().code
         )
 
     def exitIfelse(self, ctx: marzoParser.IfelseContext):

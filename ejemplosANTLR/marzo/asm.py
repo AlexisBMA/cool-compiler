@@ -34,6 +34,21 @@ $right
     addiu   $$sp    $$sp        4           # resta: pop
     sub     $$a0    $$t1        $$a0        # resta: operar""")
 
+tpl_menorque = Template("""
+$left
+    sw      $$a0    0($$sp)                 # resta: salvar en el stack
+    addiu   $$sp    $$sp        -4
+$right
+    lw      $$t1    4($$sp)                 # resta: recuperar resultado parcial anterior
+    addiu   $$sp    $$sp        4           # resta: pop
+    blt     $$t1    $$a0        lt$n        # resta: branch if lt
+    li      $$a0    0
+    j       label_exit_lt$n
+lt$n:
+    li      $$a0    1
+label_exit_lt$n:
+""")
+
 tpl_print_int = Template("""
 $prev
 	li	    $$v0     1                      # para imprimir enteros
