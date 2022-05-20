@@ -7,13 +7,13 @@ klass: KLASS TYPE ( 'inherits' TYPE)? '{' ( feature ';')* '}';
 
 feature:
 	ID '(' (params += formal (',' params += formal)*)? ')' ':' TYPE '{' expr '}' #method
-	| ID ':' TYPE ( '<-' expr)? #assignment; 
+	| ID ':' TYPE ( '<-' expr)? #assignment;
 
 formal: ID ':' TYPE;
 
 expr:
 	primary
-	| function_call
+	| function_call 
 	| if_decl
 	| while_loop
 	| expr '.' function_call

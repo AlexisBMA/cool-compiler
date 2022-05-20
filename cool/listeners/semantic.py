@@ -1,4 +1,5 @@
 from this import s
+from warnings import catch_warnings
 from util.exceptions import *
 from antlr.coolListener import coolListener
 from antlr.coolParser import coolParser
@@ -76,12 +77,19 @@ class semanticListener(coolListener):
         if featureID == 'self' or featureID == 'SELF_TYPE':
             raise anattributenamedself("Feature ID not valid (self)")
 
+
         if ctx.expr():
             if ctx.expr().primary():
                 primary = semanticListener.getLastPrimary(ctx.expr().primary())
                 if getType(primary, self.currentKlass, self.currentMethod) == None:
                     raise attrbadinit( primary.getText() +  ' was not found in this scope')
 
+        try:
+            x = self.currentKlass.lookupAttribute(featureID)
+            if x:
+                raise attroverride("Attribute can not be redefined")
+        except KeyError:
+            pass
         self.currentKlass.addAttribute(featureID, ctx.TYPE().getText())
 
     def enterExpr(self, ctx: coolParser.ExprContext):
@@ -121,8 +129,10 @@ class semanticListener(coolListener):
                 if first_item != second_item:
                     raise badequalitytest("Is not possible to compare" + first_item + "and" + second_item)
                 
-        
-    def enterFormal(self, ctx: coolParser.FormalContext):
+
+
+    
+    def enterFormal(self, ctx: coolParser.FormalContext):  
         if ctx.ID().getText() == 'self':
             raise selfinformalparameter(
                 'Using self as a parameter is prohibited')
