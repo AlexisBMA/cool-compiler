@@ -1,17 +1,10 @@
 from this import s
-from warnings import catch_warnings
 from util.exceptions import *
 from antlr.coolListener import coolListener
 from antlr.coolParser import coolParser
 from util.structure import *
 from util.structure import _allClasses as classDict
 
-
-prohibitedClassnames = {'Int': badredefineint,
-                        'Object': redefinedobject, 'SELF_TYPE': selftyperedeclared}
-
-prohibitedInheritance = {'Bool': inheritsbool,
-                         'String': inheritsstring, 'SELF_TYPE': inheritsselftype}
 
 arithmeticSymbols = ['+', '-', '*', '/']
 relationalSymbols = ['=', '>', '>=']
@@ -23,11 +16,9 @@ relationalSymbols = ['=', '>', '>=']
 class semanticListener(coolListener):
 
     def __init__(self):
-        classDict.clear()
-        setBaseKlasses()
-        self.main = False
         self.currentKlass = None
         self.currentMethod = None
+        self.currentMethodName = None
 
     def getLastPrimary(primary):
         hola = primary.expr()
@@ -39,64 +30,31 @@ class semanticListener(coolListener):
 
     def enterKlass(self, ctx: coolParser.KlassContext):
         className = ctx.TYPE(0).getText()
-        if className in prohibitedClassnames:
-            raise prohibitedClassnames[className]()
-        if ctx.TYPE(1):
-            classInherits = ctx.TYPE(1).getText()
-            if classInherits in prohibitedInheritance:
-                raise prohibitedInheritance[classInherits]()
-            self.currentKlass = Klass(
-                className, inherits=ctx.TYPE(1).getText())
-        else:
-            self.currentKlass = Klass(className)
-        if className == 'Main':
-            self.main = True
+        self.currentKlass = classDict[className]
+
       
     def enterMethod(self, ctx: coolParser.MethodContext):
         methodID = ctx.ID().getText()
         methodType = ctx.TYPE().getText()
-        if methodID == 'self' or methodID == 'SELF_TYPE':
-            raise anattributenamedself("Method ID not valid (self)")
-        if methodType == 'SELF_TYPE':
-            if ctx.expr().children[0].getText() != 'self':
-                raise selftypebadreturn("Invalid Self Type return")
-        elif methodType not in classDict:
-            raise returntypenoexist("Method" + methodType + "returns an invalid type")
         this_params = []
         if ctx.params:
             for param in ctx.params:
-                for id in this_params:
-                    hola = id[0]
-                    if param.ID().getText() == id[0]:
-                        hola = "duplicated"
-                        raise dupformals("Duplicated formal")
                 this_params.append([param.ID().getText(), param.TYPE().getText()])
             self.currentMethod = Method(methodType, params=this_params)
         else:
             self.currentMethod = Method(methodType)
+        self.currentMethodName = methodID
 
-        try:
-            methodExist = self.currentKlass.lookupMethod(methodID)
-            if methodExist:
-                if len(methodExist.params) != len(ctx.params):
-                    raise signaturechange("Changing number of parameters")
-                
-                # For every param in params check if it has the same type as in the original declaration.
-                for param in ctx.params:
-                    if methodExist.params[param.ID().getText()] != param.TYPE().getText():
-                        raise overridingmethod4("Overriding an existing method")
-            else:
-                pass
-        except KeyError:
-            pass
-        self.currentKlass.addMethod(methodID, self.currentMethod)
+        
+        if ctx.expr():
+            hola = ctx.expr().getText()
+            print(hola)
 
 
     def enterAssignment(self, ctx: coolParser.AssignmentContext):
         featureID = ctx.ID().getText()
         if featureID == 'self' or featureID == 'SELF_TYPE':
             raise anattributenamedself("Feature ID not valid (self)")
-
 
         if ctx.expr():
             if ctx.expr().primary():
@@ -110,6 +68,7 @@ class semanticListener(coolListener):
                 raise attroverride("Attribute can not be redefined")
         except KeyError:
             pass
+        
         self.currentKlass.addAttribute(featureID, ctx.TYPE().getText())
 
     def enterExpr(self, ctx: coolParser.ExprContext):
@@ -121,12 +80,13 @@ class semanticListener(coolListener):
 
 
         # Check if exist function in the variable
-        # if ctx.function_call():
-        #     try:
-        #         hola = self.currentKlass.lookupMethod(ctx.function_call().ID().getText())
-        #     except KeyError:
-        #         raise badwhilebody('The function does not exists')
-        #     print(hola)
+        if ctx.function_call():
+            #try:
+                #hola = self.currentKlass.lookupMethod(ctx.function_call().ID().getText())
+            #except KeyError:
+                #raise badwhilebody('The function does not exists')
+            if self.currentMethodName == ctx.function_call().ID().getText():
+                raise badmethodcallsitself("a method can´t call iteself")
 
 
         if ctx.primary():
@@ -149,10 +109,8 @@ class semanticListener(coolListener):
                 if first_item != second_item:
                     raise badequalitytest("Is not possible to compare" + first_item + "and" + second_item)
                 
-
-
-    
-    def enterFormal(self, ctx: coolParser.FormalContext):  
+        
+    def enterFormal(self, ctx: coolParser.FormalContext):
         if ctx.ID().getText() == 'self':
             raise selfinformalparameter(
                 'Using self as a parameter is prohibited')
@@ -182,10 +140,12 @@ class semanticListener(coolListener):
         print(hola)
         method_name = ctx.ID().getText()
         caller_exp = ctx.parentCtx.getChild(0).primary()
+        if method_name == self.currentMethod:
+            raise badmethodcallsitself("A method can not call itself")
         if ctx.parentCtx.getChild(1).getText() == '@':
             caller_exp = semanticListener.getLastPrimary(caller_exp)
             other_exp = ctx.parentCtx.TYPE()
- 
+
             if(lookupClass(getType(caller_exp, self.currentKlass, self.currentMethod)).conforms(other_exp.getText())):
                 raise trickyatdispatch2(caller_exp.getText() + " is not of type " + other_exp.getText())
         
@@ -205,10 +165,10 @@ class semanticListener(coolListener):
         print(typesCS)
 
     def exitKlass(self, ctx: coolParser.KlassContext):
-        if (not self.main):
-            raise nomain()
         self.currentKlass = None
 
     def exitExpr(self, ctx: coolParser.ExprContext):
         if ctx.let_decl(0):
             self.currentKlass.closeScope()
+
+
