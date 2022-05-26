@@ -79,6 +79,27 @@ class semanticListener(coolListener):
         if ctx.function_call():
             if self.currentMethodName == ctx.function_call().ID().getText():
                 raise badmethodcallsitself("a method can´t call iteself")
+            try:
+                attributeCaller = ctx.expr(0).getText()
+                attributeType = self.currentKlass.lookupAttribute(attributeCaller)            
+            except KeyError:
+                pass
+            
+            try:
+                klass = lookupClass(attributeType)
+                klass.lookupMethod(ctx.function_call().ID().getText())
+            except KeyError:
+                raise baddispatch(attributeCaller + ' does not have a method ' + ctx.function_call().ID().getText())
+
+            try:
+                klassName = self.currentMethod.params[attributeCaller]
+                klass = lookupClass(klassName)
+                klass.lookupMethod(ctx.function_call().ID().getText())
+            except KeyError:
+                raise badwhilebody("The method " + ctx.function_call().ID().getText() + " does not exist in the class " + attributeType)
+            
+            
+
 
 
         if ctx.primary():
@@ -135,8 +156,8 @@ class semanticListener(coolListener):
 
         if ctx.expr():
             if ctx.expr().NEW():
-                letType = ctx.TYPE().getText()
-                newType = ctx.expr().TYPE().getText()
+                letType = ctx.TYPE().getText() # B
+                newType = ctx.expr().TYPE().getText() # A
                 if not lookupClass(letType).conforms(lookupClass(newType)):
                     raise letbadinit(letType + ' is not conform to ' + newType)
 
@@ -154,11 +175,9 @@ class semanticListener(coolListener):
             if(lookupClass(getType(caller_exp, self.currentKlass, self.currentMethod)).conforms(other_exp.getText())):
                 raise trickyatdispatch2(caller_exp.getText() + " is not of type " + other_exp.getText())
         
-        try:
-            self.currentKlass.lookupMethod(method_name)
-        except KeyError:
-            raise baddispatch('The function does not exists')
-
+        
+    
+    
 
     def enterCase(self, ctx: coolParser.CaseContext):
         typesCS = {''}
