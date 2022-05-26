@@ -124,11 +124,21 @@ class semanticListener(coolListener):
         
 
     def enterLet_decl(self, ctx: coolParser.Let_declContext):
+        # Si me parece, pero no entiendo como vamos a tomar el tipo de la derecha
+        # Cree en el G4 algo que se llama assign_new_type si quieres checalo, ahí esta el id <- new_type 
+        # el problema de eso es que mataba a outofscope y assignnoconform porque me aparece un error de que pues su expr no tiene assignment_new_type
         self.currentKlass.openScope()
         let_ID = ctx.ID().getText()
 
         if let_ID == 'self' or let_ID == 'SELF_TYPE':
             raise letself("Let incorrect (using self)")
+
+        if ctx.expr():
+            if ctx.expr().NEW():
+                letType = ctx.TYPE().getText()
+                newType = ctx.expr().TYPE().getText()
+                if not lookupClass(letType).conforms(lookupClass(newType)):
+                    raise letbadinit(letType + ' is not conform to ' + newType)
 
         self.currentKlass.addScopeVariable(let_ID, ctx.TYPE().getText())
 
