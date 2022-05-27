@@ -77,6 +77,7 @@ class semanticListener(coolListener):
 
         # Check if exist function in the variable
         if ctx.function_call():
+            methodID = ctx.function_call().ID().getText()
             if self.currentMethodName == ctx.function_call().ID().getText():
                 raise badmethodcallsitself("a method can´t call iteself")
             try:
@@ -90,13 +91,20 @@ class semanticListener(coolListener):
                 klass.lookupMethod(ctx.function_call().ID().getText())
             except KeyError:
                 raise baddispatch(attributeCaller + ' does not have a method ' + ctx.function_call().ID().getText())
-
+            except:
+                pass
+            
+            # if ctx.expr(0).TYPE():
+            hola = ctx.expr(0).getText()
+            
             try:
                 klassName = self.currentMethod.params[attributeCaller]
                 klass = lookupClass(klassName)
                 klass.lookupMethod(ctx.function_call().ID().getText())
             except KeyError:
                 raise badwhilebody("The method " + ctx.function_call().ID().getText() + " does not exist in the class " + attributeType)
+            except:
+                pass
             
             
 
