@@ -68,6 +68,7 @@ class semanticListener(coolListener):
         self.currentKlass.addAttribute(featureID, ctx.TYPE().getText())
 
     def enterExpr(self, ctx: coolParser.ExprContext):
+
         if ctx.ID():
             exprName = ctx.ID().getText()
             # Check if the expression is self
@@ -78,6 +79,22 @@ class semanticListener(coolListener):
         # Check if exist function in the variable
         if ctx.function_call():
             methodID = ctx.function_call().ID().getText()
+            try:
+                if ctx.expr(0).primary().expr().TYPE():
+                    callerType = ctx.expr(0).primary().expr().TYPE().getText()
+                    methodParams = lookupClass(callerType).lookupMethod(methodID).params
+                    methodParams = list(methodParams.values())
+                    for p in ctx.function_call().params:
+                        i = 0
+                        pType = getParamType(p.getText(), self.currentKlass, self.currentMethod)
+                        if pType != methodParams[i]:
+                            raise badargs1('Invalid argument type')
+                        i += 1
+            except badargs1:
+                raise badargs1('Invalid argument type')
+            except:
+                pass
+
             if self.currentMethodName == ctx.function_call().ID().getText():
                 raise badmethodcallsitself("a method can´t call iteself")
             try:
