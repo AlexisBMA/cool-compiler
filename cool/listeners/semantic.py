@@ -44,6 +44,25 @@ class semanticListener(coolListener):
             self.currentMethod = Method(methodType)
         self.currentMethodName = methodID
 
+        if ctx.expr().if_decl():
+            ifTrue = ctx.expr().if_decl().expr(1).getText()
+            ifFalse = ctx.expr().if_decl().expr(2).getText()
+            ifTrueType = self.currentKlass.lookupAttribute(ifTrue)
+            ifFalseType = self.currentKlass.lookupAttribute(ifFalse)
+            if not lookupClass(methodType).conforms(lookupClass(ifTrueType)) and not lookupClass(methodType).conforms(lookupClass(ifFalseType)):
+                raise lubtest(methodType + ' is not conform to ' + ifTrueType + ' or ' + ifFalseType)
+        
+        try:
+            if ctx.expr().expr(0).primary():
+                leftType = ctx.expr().expr(0).primary().expr().TYPE().getText()
+                rightType = ctx.expr().TYPE().getText()
+                if not lookupClass(leftType).conforms(lookupClass(rightType)):
+                    raise trickyatdispatch2(leftType + ' is not conform to ' + rightType)
+        except trickyatdispatch2:
+            raise trickyatdispatch2(leftType + ' is not conform to ' + rightType)
+        except:
+            pass
+
         
 
 
@@ -74,7 +93,6 @@ class semanticListener(coolListener):
             # Check if the expression is self
             if exprName == 'self':
                 raise selfassignment('Assignment to self is prohibited')
-
 
         # Check if exist function in the variable
         if ctx.function_call():
@@ -123,10 +141,6 @@ class semanticListener(coolListener):
             except:
                 pass
             
-            
-
-
-
         if ctx.primary():
             primary = ctx.primary()
             if not primary.expr():
@@ -146,6 +160,8 @@ class semanticListener(coolListener):
                 second_item = getType(ctx.expr(1).primary(), self.currentKlass, self.currentMethod)
                 if first_item != second_item:
                     raise badequalitytest("Is not possible to compare" + first_item + "and" + second_item)
+
+        
                 
         
     def enterFormal(self, ctx: coolParser.FormalContext):
